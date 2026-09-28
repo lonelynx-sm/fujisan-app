@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fujisan Pranzo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<style>
+:root{
+  --bg:#161318; --bg2:#1f1b22; --card:#242028; --card2:#2b2630;
+  --ink:#f2ede6; --ink-dim:#b8afb8; --ink-faint:#7c7480;
+  --accent:#c8384a; --accent-ink:#ffe6e9;
+  --gold:#c9a24b;
+  --line:#3a333d;
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  font-size:16px;
+}
+:root:not([data-theme="light"]){ }
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f7f3ee; --bg2:#efe8de; --card:#ffffff; --card2:#f4eee6;
+    --ink:#231f24; --ink-dim:#57505a; --ink-faint:#948c96;
+    --line:#e3dcd2;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161318; --bg2:#1f1b22; --card:#242028; --card2:#2b2630;
+  --ink:#f2ede6; --ink-dim:#b8afb8; --ink-faint:#7c7480; --line:#3a333d;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding-top:var(--safe-t); padding-bottom:var(--safe-b);
+  overflow-x:hidden;
+}
+html{scroll-padding-top:var(--safe-t);}
+h1,h2,h3,.brand{font-family:"Shippori Mincho", serif;}
+.app{display:flex; flex-direction:column; height:100vh; height:100dvh;}
+header.top{
+  padding:calc(10px + var(--safe-t)) 16px 10px; background:var(--bg2);
+  border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; justify-content:space-between;
+}
+header.top .brand{font-size:1.25rem; font-weight:700; letter-spacing:.02em; color:var(--ink);}
+header.top .brand small{display:block; font-family:"Zen Kaku Gothic New",sans-serif; font-size:.62rem; color:var(--ink-faint); font-weight:400; letter-spacing:.08em;}
+.iconbtn{
+  background:var(--card); border:1px solid var(--line); color:var(--ink);
+  width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem; cursor:pointer;
+}
+main{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:14px 14px 90px;}
+nav.tabbar{
+  position:sticky; bottom:0; z-index:30; background:var(--bg2); border-top:1px solid var(--line);
+  display:flex; padding-bottom:var(--safe-b);
+}
+nav.tabbar button{
+  flex:1; background:none; border:none; color:var(--ink-faint); padding:9px 2px 8px;
+  display:flex; flex-direction:column; align-items:center; gap:2px; font-size:.62rem; font-family:inherit;
+}
+nav.tabbar button .ic{font-size:1.25rem; line-height:1;}
+nav.tabbar button.active{color:var(--accent);}
+.badge-count{
+  position:absolute; top:2px; right:18%; background:var(--accent); color:#fff; border-radius:999px;
+  font-size:.58rem; min-width:15px; height:15px; display:flex; align-items:center; justify-content:center; padding:0 3px;
+}
+nav.tabbar button{position:relative;}
+
+.view{display:none;}
+.view.active{display:block; animation:fade .18s ease;}
+@keyframes fade{from{opacity:0} to{opacity:1}}
+
+.section-title{
+  font-size:1rem; font-weight:700; margin:22px 0 8px; color:var(--ink);
+  display:flex; align-items:baseline; gap:8px;
+}
+.section-title:first-child{margin-top:4px;}
+.section-title .count{font-size:.7rem; color:var(--ink-faint); font-family:"Zen Kaku Gothic New",sans-serif; font-weight:400;}
+
+.cat{border:1px solid var(--line); border-radius:14px; margin-bottom:10px; background:var(--card); overflow:hidden;}
+.cat-head{
+  padding:12px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+}
+.cat-head h2{margin:0; font-size:1.05rem; font-weight:700;}
+.cat-head .sub{font-size:.68rem; color:var(--ink-faint); font-family:"Zen Kaku Gothic New",sans-serif; margin-top:2px;}
+.cat-head .chev{color:var(--ink-faint); transition:transform .2s;}
+.cat.open .chev{transform:rotate(180deg);}
+.cat-body{display:none;}
+.cat.open .cat-body{display:block;}
+
+.dish{
+  padding:10px 14px; border-top:1px solid var(--line); display:flex; gap:10px; align-items:flex-start;
+}
+.dish-photo{
+  width:52px; height:52px; border-radius:10px; flex:none; background:var(--card2);
+  display:flex; align-items:center; justify-content:center; font-size:1.4rem; color:var(--ink-faint);
+  border:1px solid var(--line);
+}
+.dish-info{flex:1; min-width:0;}
+.dish-top{display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;}
+.dish-id{
+  font-family:"Zen Kaku Gothic New",sans-serif; font-size:.66rem; color:var(--bg); background:var(--gold);
+  border-radius:5px; padding:1px 5px; font-weight:700; flex:none;
+}
+.dish-name{font-weight:700; font-size:.92rem;}
+.dish-desc{font-size:.74rem; color:var(--ink-dim); margin-top:2px; line-height:1.35;}
+.dish-meta{display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; font-size:.64rem; color:var(--ink-faint); font-family:"Zen Kaku Gothic New",sans-serif;}
+.chip{background:var(--card2); border:1px solid var(--line); border-radius:999px; padding:1px 7px;}
+.chip.warn{color:var(--accent-ink); background:rgba(200,56,74,.22); border-color:rgba(200,56,74,.4);}
+.chip.freeze{color:#9cd0e6;}
+
+.stepper{display:flex; align-items:center; gap:8px; flex:none;}
+.stepper button{
+  width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--card2); color:var(--ink);
+  font-size:1rem; display:flex; align-items:center; justify-content:center;
+}
+.stepper button:active{background:var(--accent); color:#fff; border-color:var(--accent);}
+.stepper .qty{min-width:16px; text-align:center; font-weight:700;}
+.toggle1{
+  padding:6px 12px; border-radius:999px; border:1px solid var(--accent); background:transparent; color:var(--accent);
+  font-size:.72rem; font-weight:700; font-family:"Zen Kaku Gothic New",sans-serif;
+}
+.toggle1.on{background:var(--accent); color:#fff;}
+
+.empty{text-align:center; padding:60px 20px; color:var(--ink-faint);}
+.empty .ic{font-size:2.2rem; display:block; margin-bottom:10px;}
+
+.summary-row{
+  display:flex; justify-content:space-between; align-items:center; padding:11px 14px; border-top:1px solid var(--line);
+  background:var(--card);
+}
+.summary-row:first-child{border-top:none; border-radius:14px 14px 0 0;}
+.summary-row .left{display:flex; align-items:baseline; gap:8px;}
+.summary-row .qty-badge{
+  font-family:"Zen Kaku Gothic New",sans-serif; font-weight:700; color:var(--accent); min-width:20px;
+}
+.card{background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:14px;}
+
+.btnrow{display:flex; gap:10px; margin-top:14px;}
+.btn{
+  flex:1; padding:12px; border-radius:12px; border:1px solid var(--line); background:var(--card2); color:var(--ink);
+  font-weight:700; font-size:.85rem; font-family:inherit; text-align:center;
+}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:#fff;}
+.btn.ghost{background:transparent;}
+
+textarea.order-text{
+  width:100%; min-height:120px; background:var(--card2); color:var(--ink); border:1px solid var(--line);
+  border-radius:10px; padding:10px; font-family:"Zen Kaku Gothic New",monospace; font-size:.8rem; resize:vertical;
+}
+
+.modal-bg{
+  position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:100; display:none; align-items:flex-end; justify-content:center;
+}
+.modal-bg.open{display:flex;}
+.modal{
+  background:var(--bg2); width:100%; max-width:520px; border-radius:20px 20px 0 0; padding:18px 18px calc(18px + var(--safe-b));
+  max-height:88vh; overflow-y:auto;
+}
+.modal h3{margin:0 0 10px;}
+.modal-close{float:right; background:none; border:none; color:var(--ink-faint); font-size:1.3rem;}
+
+#qr-target{display:flex; justify-content:center; padding:14px; background:#fff; border-radius:14px; margin:10px 0;}
+video#scan-video{width:100%; border-radius:14px; background:#000;}
+.scan-wrap{position:relative;}
+.scan-hint{text-align:center; font-size:.75rem; color:var(--ink-faint); margin-top:8px;}
+
+.person-chip{
+  display:flex; justify-content:space-between; align-items:center; padding:9px 12px; background:var(--card2);
+  border-radius:10px; margin-bottom:6px; font-size:.82rem;
+}
+.person-chip button{background:none; border:none; color:var(--ink-faint); font-size:1rem;}
+
+.toast{
+  position:fixed; left:50%; bottom:100px; transform:translateX(-50%); background:var(--ink); color:var(--bg);
+  padding:9px 16px; border-radius:999px; font-size:.78rem; z-index:200; opacity:0; transition:opacity .25s; pointer-events:none;
+  font-weight:700;
+}
+.toast.show{opacity:1;}
+
+.formula-box{background:var(--card2); border-radius:12px; padding:14px; margin-bottom:12px;}
+.formula-box .price{color:var(--gold); font-size:1.3rem; font-weight:700; font-family:"Shippori Mincho",serif;}
+table.legend{width:100%; border-collapse:collapse; font-size:.78rem;}
+table.legend td{padding:5px 8px; border-bottom:1px solid var(--line);}
+table.legend td:first-child{width:26px; color:var(--gold); font-weight:700;}
+
+.arrivo-item{display:flex; gap:10px; align-items:center; padding:10px 14px; border-top:1px solid var(--line);}
+.arrivo-item:first-child{border-top:none;}
+.arrivo-item.done{opacity:.4;}
+.arrivo-item .name{flex:1; font-weight:700; font-size:.88rem;}
+.arrivo-item .name small{display:block; font-weight:400; color:var(--ink-faint); font-size:.68rem;}
+.check{
+  width:26px; height:26px; border-radius:50%; border:2px solid var(--line); flex:none;
+  display:flex; align-items:center; justify-content:center; font-size:.8rem; color:transparent;
+}
+.arrivo-item.done .check{background:var(--accent); border-color:var(--accent); color:#fff;}
+
+@media print{
+  header.top, nav.tabbar, .btnrow, #qr-modal, #scan-modal{display:none !important;}
+  body{background:#fff; color:#000;}
+  .view{display:none !important;}
+  #print-area{display:block !important; color:#000;}
+}
+#print-area{display:none;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">Fujisan <small>PRANZO ALL YOU CAN EAT</small></div>
+    <button class="iconbtn" id="btn-info">i</button>
+  </header>
+
+  <main id="main">
+
+    <!-- MENU -->
+    <section class="view active" id="view-menu">
+      <div id="menu-list"></div>
+    </section>
+
+    <!-- BEVANDE -->
+    <section class="view" id="view-bevande">
+      <div id="bev-list"></div>
+    </section>
+
+    <!-- ORDINE -->
+    <section class="view" id="view-ordine">
+      <div class="section-title">Il tuo nome</div>
+      <input id="input-name" placeholder="Come ti chiami?" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;font-size:.9rem;">
+
+      <div class="section-title">Il mio ordine <span class="count" id="my-count"></span></div>
+      <div class="card" id="my-order-card"></div>
+
+      <div class="btnrow">
+        <button class="btn" id="btn-copy">Copia lista</button>
+        <button class="btn" id="btn-qr">Mostra il mio QR</button>
+      </div>
+      <div class="btnrow">
+        <button class="btn ghost" id="btn-clear">Svuota il mio ordine</button>
+      </div>
+    </section>
+
+    <!-- GRUPPO -->
+    <section class="view" id="view-gruppo">
+      <div class="section-title">Commensali nel cumulativo <span class="count" id="group-count"></span></div>
+      <div id="group-people"></div>
+      <div class="btnrow">
+        <button class="btn primary" id="btn-scan">Scansiona un commensale</button>
+      </div>
+
+      <div class="section-title">Ordine cumulativo <span class="count" id="cum-count"></span></div>
+      <div class="card" id="cum-order-card"></div>
+      <div class="btnrow">
+        <button class="btn" id="btn-cum-copy">Copia cumulativo</button>
+        <button class="btn" id="btn-cum-print">Stampa</button>
+      </div>
+    </section>
+
+    <!-- ARRIVO -->
+    <section class="view" id="view-arrivo">
+      <div class="section-title">Da arrivare <span class="count" id="arrivo-pending-count"></span></div>
+      <div class="card" id="arrivo-pending"></div>
+      <div class="section-title">Arrivati <span class="count" id="arrivo-done-count"></span></div>
+      <div class="card" id="arrivo-done"></div>
+    </section>
+
+  </main>
+
+  <nav class="tabbar">
+    <button data-view="menu" class="active"><span class="ic">🍣</span>Menù</button>
+    <button data-view="bevande"><span class="ic">🍵</span>Bevande</button>
+    <button data-view="ordine"><span class="ic">🧾</span>Ordine<span class="badge-count" id="nav-badge-ordine" style="display:none"></span></button>
+    <button data-view="gruppo"><span class="ic">👥</span>Gruppo</button>
+    <button data-view="arrivo"><span class="ic">🔔</span>Arrivo<span class="badge-count" id="nav-badge-arrivo" style="display:none"></span></button>
+  </nav>
+</div>
+
+<!-- INFO MODAL -->
+<div class="modal-bg" id="info-modal">
+  <div class="modal">
+    <button class="modal-close" data-close="info-modal">✕</button>
+    <h3>Formula & regole</h3>
+    <div class="formula-box">
+      <div>Feriale <span class="price">15,90€</span></div>
+      <div>Weekend e festivi <span class="price">17,90€</span></div>
+      <div>Menù bambino (sotto 120cm) <span class="price">8,00€</span></div>
+      <div style="margin-top:6px;font-size:.75rem;color:var(--ink-faint)">+ 1€ coperto a persona · bevande e dolci sempre esclusi</div>
+    </div>
+    <p style="font-size:.82rem;color:var(--ink-dim);line-height:1.5">
+      I prezzi sui singoli piatti non sono quello che paghi ordinando: sono il prezzo "alla carta",
+      usato solo come <b>penale in caso di spreco</b> — se avanza qualcosa nel piatto, si paga per intero.
+      Il ristorante consiglia di ordinare 6 portate a persona per volta.
+    </p>
+    <h3 style="margin-top:18px">Legenda allergeni</h3>
+    <table class="legend" id="legend-table"></table>
+    <h3 style="margin-top:18px">Legenda simboli</h3>
+    <p style="font-size:.82rem;color:var(--ink-dim)">
+      🌱 Vegetariano · 🌶️ Piccante · ⭐ Più ordinati · <span class="chip freeze">❄</span> Surgelato ·
+      <span class="chip warn">Max 1/persona</span> quantità limitata dal ristorante, non da noi.
+    </p>
+  </div>
+</div>
+
+<!-- QR SHOW MODAL -->
+<div class="modal-bg" id="qr-modal">
+  <div class="modal">
+    <button class="modal-close" data-close="qr-modal">✕</button>
+    <h3>Il tuo QR</h3>
+    <p style="font-size:.8rem;color:var(--ink-faint)">Fallo inquadrare da chi tiene il telefono con l'ordine cumulativo (tab Gruppo → Scansiona).</p>
+    <div id="qr-target"></div>
+  </div>
+</div>
+
+<!-- SCAN MODAL -->
+<div class="modal-bg" id="scan-modal">
+  <div class="modal">
+    <button class="modal-close" data-close="scan-modal">✕</button>
+    <h3>Scansiona</h3>
+    <div class="scan-wrap">
+      <video id="scan-video" playsinline autoplay muted></video>
+      <canvas id="scan-canvas" style="display:none"></canvas>
+    </div>
+    <div class="scan-hint">Inquadra il QR mostrato dall'altro telefono (tab Ordine → Mostra il mio QR)</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="print-area"></div>
+
+<script id="dishes-data" type="application/json">
+[{"id": "05", "nome": "Gyoza", "descrizione": "Ravioli di pollo alla griglia", "categoria": "ANTIPASTI", "pz": "4", "prezzo": "5,00€", "allergeni": ["4"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "06", "nome": "Gomma Wakame", "descrizione": "Alghe verdi giapponesi al vapore", "categoria": "ANTIPASTI", "pz": "N/D", "prezzo": "4,00€", "allergeni": ["11"], "surgelato": true, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "09", "nome": "Patatine Fritte", "descrizione": "", "categoria": "ANTIPASTI", "pz": "N/D", "prezzo": "3,50€", "allergeni": [], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "01", "nome": "Edamame", "descrizione": "Fagioli lessati giapponesi", "categoria": "ANTIPASTI", "pz": "N/D", "prezzo": "3,50€", "allergeni": ["13"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "03", "nome": "Ebi Roll", "descrizione": "Ripieno di gambero", "categoria": "ANTIPASTI", "pz": "4", "prezzo": "4,00€", "allergeni": ["2", "4"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "301", "nome": "Involtini Primavera", "descrizione": "Ripieno di verdure", "categoria": "ANTIPASTI", "pz": "2", "prezzo": "4,00€", "allergeni": ["4"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "014", "nome": "Pane Cinese", "descrizione": "Pane cinese al vapore", "categoria": "ANTIPASTI", "pz": "2", "prezzo": "2,00€", "allergeni": ["4"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "013", "nome": "Nuvole di Drago", "descrizione": "Chips di gamberi", "categoria": "ANTIPASTI", "pz": "N/D", "prezzo": "2,00€", "allergeni": ["2"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "501", "nome": "Gyoza al Vapore", "descrizione": "Ravioli con ripieno di carne, cotti a vapore", "categoria": "RAVIOLI", "pz": "4", "prezzo": "5,00€", "allergeni": ["4", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "502", "nome": "Ebi Gyoza al Vapore", "descrizione": "Ravioli con ripieno di gamberi, piselli, carote, cotti a vapore", "categoria": "RAVIOLI", "pz": "4", "prezzo": "5,00€", "allergeni": ["2", "4", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "505", "nome": "Ravioli di Verdure", "descrizione": "Ravioli con ripieno di verdure", "categoria": "RAVIOLI", "pz": "4", "prezzo": "5,00€", "allergeni": ["4", "13"], "surgelato": true, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "11", "nome": "Insalata di Surimi", "descrizione": "Insalata, surimi, salsa, carote e sesamo", "categoria": "INSALATE", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["2", "4", "9", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "12", "nome": "Insalata di Gamberi", "descrizione": "Insalata, gamberi, salsa, carote e sesamo", "categoria": "INSALATE", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["2", "4", "9", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "7", "nome": "Zuppa di Miso", "descrizione": "Zuppa da soia fermentata, con wakame, tofu, erba cipollina", "categoria": "ZUPPE", "pz": "N/D", "prezzo": "2,50€", "allergeni": ["4", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "81", "nome": "Zuppa Agropiccante", "descrizione": "", "categoria": "ZUPPE", "pz": "N/D", "prezzo": "3,50€", "allergeni": ["4", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "82", "nome": "Zuppa Pollo e Mais", "descrizione": "Zuppa con pollo e mais", "categoria": "ZUPPE", "pz": "N/D", "prezzo": "3,00€", "allergeni": ["14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "111", "nome": "Temaki Salmone", "descrizione": "Salmone, philadelphia, avocado, sesamo", "categoria": "TEMAKI", "pz": "N/D", "prezzo": "4,00€", "allergeni": ["5", "9", "11"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "112", "nome": "Spicy Tuna", "descrizione": "Tonno crudo, spicy maionese, avocado, sesamo", "categoria": "TEMAKI", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["9", "11", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "113", "nome": "Temaki Gambero Cotto", "descrizione": "Gambero cotto, philadelphia, avocado, sesamo", "categoria": "TEMAKI", "pz": "N/D", "prezzo": "4,00€", "allergeni": ["2", "5", "11"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "114", "nome": "Tempura Temaki", "descrizione": "Tempura, gambero, maionese, salsa teriyaki, sesamo", "categoria": "TEMAKI", "pz": "N/D", "prezzo": "4,00€", "allergeni": ["2", "4", "6", "11", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "115", "nome": "Temaki Tonno Cotto", "descrizione": "Tonno cotto, philadelphia, avocado, sesamo", "categoria": "TEMAKI", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["5", "9", "11"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "116", "nome": "Spicy Salmone", "descrizione": "Salmone, spicy maionese, avocado, sesamo", "categoria": "TEMAKI", "pz": "N/D", "prezzo": "4,00€", "allergeni": ["9", "11", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "117", "nome": "Spicy Vegetarian", "descrizione": "Patatine, avocado, rapa gialla, spicy maionese, sesamo", "categoria": "TEMAKI", "pz": "N/D", "prezzo": "4,00€", "allergeni": ["4", "6", "11", "14"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": true, "consigliato": false}, {"id": "118", "nome": "Chicken Temaki", "descrizione": "Pollo fritto, salsa teriyaki, insalata, maionese", "categoria": "TEMAKI", "pz": "N/D", "prezzo": "4,00€", "allergeni": ["4", "6", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "121", "nome": "Mango Temaki", "descrizione": "Mango, philadelphia, insalata", "categoria": "TEMAKI", "pz": "N/D", "prezzo": "4,00€", "allergeni": ["4", "5", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "201", "nome": "Nigiri Salmone", "descrizione": "", "categoria": "NIGIRI", "pz": "2 (dedotto da foto)", "prezzo": "3,00€", "allergeni": ["9"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "203", "nome": "Nigiri Branzino", "descrizione": "", "categoria": "NIGIRI", "pz": "2 (dedotto da foto)", "prezzo": "3,00€", "allergeni": ["9"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "207", "nome": "Nigiri Surimi", "descrizione": "", "categoria": "NIGIRI", "pz": "2 (dedotto da foto)", "prezzo": "3,00€", "allergeni": ["2"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "204", "nome": "Nigiri Gambero Cotto", "descrizione": "", "categoria": "NIGIRI", "pz": "2 (dedotto da foto)", "prezzo": "3,00€", "allergeni": ["2"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "211", "nome": "Hosomaki Salmone", "descrizione": "Salmone", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "4,00€", "allergeni": ["9"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "212", "nome": "Hosomaki Tuna", "descrizione": "Tonno crudo", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "5,00€", "allergeni": ["9"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "213", "nome": "Hosomaki Gambero Cotto", "descrizione": "Gambero cotto", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "4,00€", "allergeni": ["2"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "214", "nome": "Hosomaki Tonno Cotto", "descrizione": "Tonno cotto", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "4,00€", "allergeni": ["9"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "215", "nome": "Kappa Hosomaki", "descrizione": "Rapa gialla, avocado", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "5,00€", "allergeni": [], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "216", "nome": "Maki Fritto", "descrizione": "Philadelphia, tobiko, teriyaki, ketaifi, sesamo", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "5,00€", "allergeni": ["4", "5", "6", "9", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "217", "nome": "Chicken Maki", "descrizione": "Pollo fritto, salsa teriyaki", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "4,00€", "allergeni": ["4", "6", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "218", "nome": "Hosomaki Surimi", "descrizione": "Polpa di granchio", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "4,00€", "allergeni": ["2"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "219", "nome": "Spicy Hosomaki", "descrizione": "Salmone, spicy maionese", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "4,00€", "allergeni": ["9", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "220", "nome": "Mango Hosomaki", "descrizione": "Mango", "categoria": "HOSOMAKI", "pz": "8", "prezzo": "5,00€", "allergeni": [], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "911", "nome": "Futomaki Salmone", "descrizione": "Maionese, avocado, surimi, salmone, tobiko", "categoria": "FUTOMAKI", "pz": "6", "prezzo": "7,00€", "allergeni": ["2", "9", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "912", "nome": "Futomaki Fritto", "descrizione": "Maionese, avocado, surimi, salmone, tobiko, teriyaki", "categoria": "FUTOMAKI", "pz": "6", "prezzo": "8,00€", "allergeni": ["2", "4", "6", "9", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "913", "nome": "Futomaki Gamberi", "descrizione": "Gambero tempura, maionese, tobiko, salsa teriyaki", "categoria": "FUTOMAKI", "pz": "6", "prezzo": "7,00€", "allergeni": ["2", "4", "6", "9", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "914", "nome": "Spicy Vegetarian", "descrizione": "Avocado, rapa gialla, patatine, spicy maionese", "categoria": "FUTOMAKI", "pz": "6", "prezzo": "7,00€", "allergeni": ["4", "6", "14"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": true, "consigliato": false}, {"id": "915", "nome": "Spicy Chicken", "descrizione": "Pollo fritto, insalata, maionese, teriyaki", "categoria": "FUTOMAKI", "pz": "6", "prezzo": "7,00€", "allergeni": ["4", "6", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "916", "nome": "Yellow Futomaki", "descrizione": "Surimi, avocado, maionese, tobiko, ananas, teriyaki", "categoria": "FUTOMAKI", "pz": "6", "prezzo": "8,00€", "allergeni": ["2", "4", "6", "9", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "411", "nome": "Uramaki Sake", "descrizione": "Salmone, avocado, philadelphia, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "8,00€", "allergeni": ["5", "9", "11"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "413", "nome": "Uramaki Ebi", "descrizione": "Gambero cotto, avocado, philadelphia, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "8,00€", "allergeni": ["2", "5", "11"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "414", "nome": "Uramaki Tonno", "descrizione": "Tonno cotto, avocado, philadelphia, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "8,00€", "allergeni": ["5", "9", "11"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "416", "nome": "California", "descrizione": "Surimi, maionese, avocado, tobiko, rapa gialla, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "8,00€", "allergeni": ["2", "11", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "442", "nome": "Venere Roll", "descrizione": "Riso venere, philadelphia, gambero fritto in tempura", "categoria": "URAMAKI", "pz": "8", "prezzo": "8,00€", "allergeni": ["4", "5", "6", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "417", "nome": "Uramaki Chicken", "descrizione": "Maionese, insalata, pollo fritto, teriyaki, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "8,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "418", "nome": "Uramaki Ebiten", "descrizione": "Tempura gamberi, philadelphia, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "8,00€", "allergeni": ["2", "4", "5", "6", "11"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "419", "nome": "Tobiko Uramaki", "descrizione": "Maionese, gambero tempura, tobiko, teriyaki, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "9,00€", "allergeni": ["2", "4", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "422", "nome": "Fujisan Roll", "descrizione": "Philadelphia, avocado, salmone, salmone esterno, teriyaki, tempura, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "11,00€", "allergeni": ["4", "5", "6", "9", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "423", "nome": "Miura Roll", "descrizione": "Philadelphia, salmone cotto, ketaifi, teriyaki, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "8,00€", "allergeni": ["4", "5", "9", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "424", "nome": "Maki Fritto", "descrizione": "Salmone, philadelphia, avocado, teriyaki, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "9,00€", "allergeni": ["5", "9", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "426", "nome": "Uramaki D'oro", "descrizione": "Maionese, surimi, patatine, teriyaki, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "9,00€", "allergeni": ["2", "4", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "427", "nome": "Branzino Roll", "descrizione": "Spicy maionese, gambero cotto, patatine, branzino esterno, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "9,00€", "allergeni": ["2", "4", "11", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "430", "nome": "Crispy Maki", "descrizione": "Philadelphia, salmone, patatine, spicy maionese, salsa teriyaki, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "9,00€", "allergeni": ["4", "5", "6", "9", "11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "432", "nome": "Spicy Vegetarian", "descrizione": "Spicy maionese, avocado, rapa gialla, patatine, sesamo", "categoria": "URAMAKI", "pz": "8", "prezzo": "8,00€", "allergeni": ["4", "11", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "435", "nome": "Onion Ebiten", "descrizione": "Philadelphia, tempura gambero, cipolla fritta, salsa teriyaki", "categoria": "URAMAKI", "pz": "8", "prezzo": "9,00€", "allergeni": ["2", "4", "5", "6", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "436", "nome": "Elyn Roll", "descrizione": "Spicy maionese, salmone, cipolla fritta", "categoria": "URAMAKI", "pz": "8", "prezzo": "9,00€", "allergeni": ["4", "6", "9", "11", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "811", "nome": "Tramezzini Salmone", "descrizione": "Salmone, avocado, philadelphia, tempura, salsa teriyaki, sesamo", "categoria": "TRAMEZZINI", "pz": "N/D", "prezzo": "9,00€", "allergeni": ["2", "4", "5", "6", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "814", "nome": "Tramezzini Tonno Cotto", "descrizione": "Tonno cotto, avocado, philadelphia, tempura, salsa teriyaki, sesamo", "categoria": "TRAMEZZINI", "pz": "N/D", "prezzo": "9,00€", "allergeni": ["4", "5", "6", "9", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "440", "nome": "Onion Roll", "descrizione": "Tartar surimi, spicy maionese, olio di sesamo, cipolla fritta, sesamo", "categoria": "TRAMEZZINI", "pz": "8", "prezzo": "9,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "801", "nome": "Carpaccio Salmone", "descrizione": "Fette di salmone, salsa ponzu, sesamo, alghe", "categoria": "SUSHI", "pz": "N/D", "prezzo": "4,00€", "allergeni": ["4", "9", "11", "13"], "surgelato": false, "max1persona": true, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "511", "nome": "Sushi Misto Cotto", "descrizione": "4 nigiri, 4 uramaki", "categoria": "SUSHI", "pz": "8 (composito)", "prezzo": "8,00€", "allergeni": ["9", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "512", "nome": "Sushi Misto Crudo", "descrizione": "4 nigiri, 4 uramaki", "categoria": "SUSHI", "pz": "8 (composito)", "prezzo": "8,00€", "allergeni": ["5", "9", "11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "901", "nome": "Chirashi Salmone", "descrizione": "Riso, salmone, sesamo", "categoria": "SUSHI", "pz": "N/D", "prezzo": "10,00€", "allergeni": ["9", "11"], "surgelato": false, "max1persona": true, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "603", "nome": "Spicy Sake", "descrizione": "Alga, tobiko, salmone, spicy maionese, olio di sesamo, tobiko", "categoria": "GUNKAN", "pz": "2", "prezzo": "4,50€", "allergeni": ["4", "9", "11", "13", "14"], "surgelato": true, "max1persona": true, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "611", "nome": "Gunkan Snow", "descrizione": "Riso, philadelphia, ketaifi, salsa teriyaki", "categoria": "GUNKAN", "pz": "2", "prezzo": "2,50€", "allergeni": ["4", "5", "6", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "701", "nome": "Tartar Salmone", "descrizione": "Salmone, salsa ponzu, sesamo", "categoria": "TARTAR / SASHIMI", "pz": "N/D", "prezzo": "8,00€", "allergeni": ["4", "9", "11", "13"], "surgelato": false, "max1persona": true, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "904", "nome": "Sashimi Salmone", "descrizione": "", "categoria": "TARTAR / SASHIMI", "pz": "4", "prezzo": "10,00€", "allergeni": ["9"], "surgelato": false, "max1persona": true, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "15", "nome": "Riso Bianco", "descrizione": "", "categoria": "PRIMI RISO", "pz": "N/D", "prezzo": "3,00€", "allergeni": ["11"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "16", "nome": "Riso Con Verdure", "descrizione": "Riso, verdure, uova", "categoria": "PRIMI RISO", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "17", "nome": "Riso Con Pollo", "descrizione": "Riso, pollo, verdure, uova", "categoria": "PRIMI RISO", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "181", "nome": "Riso Al Curry", "descrizione": "Riso, uova, verdure, curry, pollo", "categoria": "PRIMI RISO", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["1", "4", "9", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "182", "nome": "Riso Thailandese", "descrizione": "Riso, salsa piccante, verdure, ananas", "categoria": "PRIMI RISO", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "183", "nome": "Riso Cantonese", "descrizione": "Riso, verdure, uova, piselli, prosciutto", "categoria": "PRIMI RISO", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "19", "nome": "Tendo Riso Tempura di Gamberi", "descrizione": "Riso con verdure, tempura di gamberi", "categoria": "PRIMI RISO", "pz": "N/D", "prezzo": "8,00€", "allergeni": ["2", "4", "6", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "20", "nome": "Riso con Tempura di Verdure", "descrizione": "Riso con verdure, tempura di verdura", "categoria": "PRIMI RISO", "pz": "N/D", "prezzo": "7,00€", "allergeni": ["4", "6", "11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "22", "nome": "Yaki Soba con Gambero", "descrizione": "Yaki soba, verdure, gamberi", "categoria": "PASTA", "pz": "N/D", "prezzo": "7,00€", "allergeni": ["2", "4", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "23", "nome": "Yaki Soba con Verdure", "descrizione": "Yaki soba, verdure", "categoria": "PASTA", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "24", "nome": "Yaki Soba con Pollo", "descrizione": "Yaki soba, verdure, pollo", "categoria": "PASTA", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "26", "nome": "Udon con Pollo", "descrizione": "Udon, verdure, pollo", "categoria": "PASTA", "pz": "N/D", "prezzo": "8,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "27", "nome": "Udon con Verdure", "descrizione": "Udon, verdure", "categoria": "PASTA", "pz": "N/D", "prezzo": "7,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "314", "nome": "Gnocchi di Riso con Verdure", "descrizione": "", "categoria": "PASTA", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "29", "nome": "Udon con Gamberi", "descrizione": "Udon, verdure, gamberi", "categoria": "PASTA", "pz": "N/D", "prezzo": "7,00€", "allergeni": ["2", "4", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "311", "nome": "Spaghetti di Riso con Verdure e Gamberi", "descrizione": "", "categoria": "PASTA", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["2", "4", "11", "13", "14"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "312", "nome": "Spaghetti di Soia con Verdure Miste", "descrizione": "", "categoria": "PASTA", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": true, "piccante": false, "consigliato": false}, {"id": "313", "nome": "Spaghetti di Soia con Carne di Maiale Piccante", "descrizione": "", "categoria": "PASTA", "pz": "N/D", "prezzo": "8,00€", "allergeni": ["4", "11", "13", "14"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": true}, {"id": "49", "nome": "Pollo con Verdure", "descrizione": "Pollo e verdure", "categoria": "POLLO", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["4", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "50", "nome": "Pollo con Salsa Piccante", "descrizione": "Pollo, salsa piccante", "categoria": "POLLO", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["4", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "51", "nome": "Pollo al Curry", "descrizione": "Pollo, verdure, curry", "categoria": "POLLO", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["1", "4", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "52", "nome": "Pollo con Mandorle", "descrizione": "Pollo, verdure, mandorle", "categoria": "POLLO", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["3", "4", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "53", "nome": "Pollo con Salsa Agrodolce", "descrizione": "Pollo, salsa agrodolce, verdure", "categoria": "POLLO", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["4", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "530", "nome": "Pollo con Patate", "descrizione": "Pollo, patate, verdure", "categoria": "POLLO", "pz": "N/D", "prezzo": "5,00€", "allergeni": ["3", "4", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "54", "nome": "Vitello con Verdure", "descrizione": "Vitello e verdure", "categoria": "VITELLO", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "55", "nome": "Vitello con Salsa Piccante", "descrizione": "Vitello, salsa piccante", "categoria": "VITELLO", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": true, "consigliato": false}, {"id": "56", "nome": "Vitello al Curry", "descrizione": "Vitello, verdure, curry", "categoria": "VITELLO", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["1", "4", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "57", "nome": "Vitello con Peperoni", "descrizione": "Vitello, peperoni", "categoria": "VITELLO", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "570", "nome": "Vitello con Patate", "descrizione": "Vitello, patate e verdure", "categoria": "VITELLO", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["1", "4", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "35", "nome": "Ebi Tempura", "descrizione": "Gamberi fritti con tempura", "categoria": "TEMPURA", "pz": "N/D", "prezzo": "9,00€", "allergeni": ["2", "4", "6", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "36", "nome": "Tempura Verdure", "descrizione": "Verdure fritte con tempura", "categoria": "TEMPURA", "pz": "N/D", "prezzo": "7,00€", "allergeni": ["4", "6", "11", "13"], "surgelato": false, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "32", "nome": "Spiedini di Gamberi", "descrizione": "Gamberi e salsa teriyaki", "categoria": "TEMPURA", "pz": "N/D", "prezzo": "8,00€", "allergeni": ["2", "4", "11", "13"], "surgelato": true, "max1persona": true, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "33", "nome": "Spiedini di Pollo", "descrizione": "Pollo e salsa teriyaki", "categoria": "TEMPURA", "pz": "N/D", "prezzo": "7,00€", "allergeni": ["4", "11", "13"], "surgelato": true, "max1persona": true, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "39", "nome": "Tonkatsu", "descrizione": "Maiale impanato, salsa teriyaki", "categoria": "TEMPURA", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "6", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": true}, {"id": "40", "nome": "Torikatsu", "descrizione": "Pollo impanato, salsa teriyaki", "categoria": "TEMPURA", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "6", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "401", "nome": "Calamari Fritti", "descrizione": "Calamari fritti in tempura", "categoria": "TEMPURA", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "6", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}, {"id": "402", "nome": "Pollo Fritto", "descrizione": "Pollo fritto in tempura", "categoria": "TEMPURA", "pz": "N/D", "prezzo": "6,00€", "allergeni": ["4", "6", "11", "13"], "surgelato": true, "max1persona": false, "vegetariano": false, "piccante": false, "consigliato": false}]
+</script>
+<script id="drinks-data" type="application/json">
+[{"sottocategoria": "Acqua", "nome": "Acqua 50cl", "prezzo": "2,00€", "slug": "acqua-acqua-50cl"}, {"sottocategoria": "Acqua", "nome": "Acqua 75cl", "prezzo": "3,00€", "slug": "acqua-acqua-75cl"}, {"sottocategoria": "Bevande calde", "nome": "Thè Verde Giapponese", "prezzo": "3,00€", "slug": "bevande-calde-the-verde-giapponese"}, {"sottocategoria": "Bibite in lattina", "nome": "Coca Cola", "prezzo": "3,00€", "slug": "bibite-in-lattina-coca-cola"}, {"sottocategoria": "Bibite in lattina", "nome": "Fanta", "prezzo": "3,00€", "slug": "bibite-in-lattina-fanta"}, {"sottocategoria": "Bibite in lattina", "nome": "Sprite", "prezzo": "3,00€", "slug": "bibite-in-lattina-sprite"}, {"sottocategoria": "Bibite in lattina", "nome": "Thè Pesca", "prezzo": "3,00€", "slug": "bibite-in-lattina-the-pesca"}, {"sottocategoria": "Bibite in lattina", "nome": "Thè Limone", "prezzo": "3,00€", "slug": "bibite-in-lattina-the-limone"}, {"sottocategoria": "Coca Cola alla spina", "nome": "Coca Cola piccola", "prezzo": "3,00€", "slug": "coca-cola-alla-spina-coca-cola-piccola"}, {"sottocategoria": "Coca Cola alla spina", "nome": "Coca Cola media", "prezzo": "5,00€", "slug": "coca-cola-alla-spina-coca-cola-media"}, {"sottocategoria": "Birra in bottiglia", "nome": "Birra Asahi", "prezzo": "5,50€", "slug": "birra-in-bottiglia-birra-asahi"}, {"sottocategoria": "Birra in bottiglia", "nome": "Birra Tsingtao", "prezzo": "5,50€", "slug": "birra-in-bottiglia-birra-tsingtao"}, {"sottocategoria": "Birra in bottiglia", "nome": "Birra Sapporo", "prezzo": "4,50€", "slug": "birra-in-bottiglia-birra-sapporo"}, {"sottocategoria": "Vino della casa", "nome": "Vino bianco 1/4 litro", "prezzo": "4,50€", "slug": "vino-della-casa-vino-bianco-1-4-litro"}, {"sottocategoria": "Vino della casa", "nome": "Vino bianco 1/2 litro", "prezzo": "6,00€", "slug": "vino-della-casa-vino-bianco-1-2-litro"}, {"sottocategoria": "Vino della casa", "nome": "Vino bianco 1 litro", "prezzo": "10,00€", "slug": "vino-della-casa-vino-bianco-1-litro"}, {"sottocategoria": "Vino bianco fermo", "nome": "Roero Arneis", "prezzo": "15,00€", "slug": "vino-bianco-fermo-roero-arneis"}, {"sottocategoria": "Vino bianco fermo", "nome": "Greco Sannio", "prezzo": "15,00€", "slug": "vino-bianco-fermo-greco-sannio"}, {"sottocategoria": "Vino bianco fermo", "nome": "Falanghina Sannio", "prezzo": "15,00€", "slug": "vino-bianco-fermo-falanghina-sannio"}, {"sottocategoria": "Vino bianco fermo", "nome": "Muller Thurgau", "prezzo": "15,00€", "slug": "vino-bianco-fermo-muller-thurgau"}, {"sottocategoria": "Vino bianco fermo", "nome": "Gewurztraminer", "prezzo": "18,00€", "slug": "vino-bianco-fermo-gewurztraminer"}, {"sottocategoria": "Vino rosso", "nome": "Barbera d'Alba", "prezzo": "16,00€", "slug": "vino-rosso-barbera-d-alba"}, {"sottocategoria": "Vino rosso", "nome": "Nebbiolo delle Langhe", "prezzo": "18,00€", "slug": "vino-rosso-nebbiolo-delle-langhe"}, {"sottocategoria": "Vino bianco frizzante", "nome": "Prosecco Valdobbiadene", "prezzo": "18,00€", "slug": "vino-bianco-frizzante-prosecco-valdobbiadene"}, {"sottocategoria": "Liquori", "nome": "Sake di Riso", "prezzo": "3,50€", "slug": "liquori-sake-di-riso"}, {"sottocategoria": "Liquori", "nome": "Sake di Prugna", "prezzo": "4,00€", "slug": "liquori-sake-di-prugna"}, {"sottocategoria": "Liquori", "nome": "Grappa", "prezzo": "3,00€", "slug": "liquori-grappa"}, {"sottocategoria": "Liquori", "nome": "Limoncello", "prezzo": "3,00€", "slug": "liquori-limoncello"}, {"sottocategoria": "Liquori", "nome": "Amaro", "prezzo": "3,00€", "slug": "liquori-amaro"}, {"sottocategoria": "Liquori", "nome": "Whisky", "prezzo": "4,00€", "slug": "liquori-whisky"}, {"sottocategoria": "Caffè", "nome": "Caffè", "prezzo": "1,50€", "slug": "caffe-caffe"}, {"sottocategoria": "Caffè", "nome": "Caffè corretto", "prezzo": "1,50€", "slug": "caffe-caffe-corretto"}, {"sottocategoria": "Caffè", "nome": "Caffè ginseng", "prezzo": "2,00€", "slug": "caffe-caffe-ginseng"}, {"sottocategoria": "Caffè", "nome": "Caffè d'orzo", "prezzo": "2,00€", "slug": "caffe-caffe-d-orzo"}, {"sottocategoria": "Caffè", "nome": "Caffè decaffeinato", "prezzo": "2,00€", "slug": "caffe-caffe-decaffeinato"}]
+</script>
+
+<script>
+const DISHES = JSON.parse(document.getElementById('dishes-data').textContent);
+const DRINKS = JSON.parse(document.getElementById('drinks-data').textContent);
+const ALLERGENI = {1:"Arachidi e derivati",2:"Crostacei",3:"Frutta a guscio",4:"Glutine",5:"Latte e derivati",
+  6:"Lupini",7:"Molluschi",8:"Senape",9:"Pesce",10:"Sedano",11:"Sesamo",12:"Anidride solforosa e solfiti",
+  13:"Soia",14:"Uova e derivati"};
+const CAT_ICON = {"ANTIPASTI":"🥟","RAVIOLI":"🥟","INSALATE":"🥗","ZUPPE":"🍲","TEMAKI":"🍙","NIGIRI":"🍣",
+  "HOSOMAKI":"🍣","FUTOMAKI":"🍣","URAMAKI":"🍣","TRAMEZZINI":"🥪","SUSHI":"🍱","GUNKAN":"🍣",
+  "TARTAR / SASHIMI":"🐟","PRIMI RISO":"🍚","PASTA":"🍜","POLLO":"🍗","VITELLO":"🥩","TEMPURA":"🍤"};
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem('fujisan_v1');
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {name:"", food:{}, drink:{}, arrived:{}, group:[]};
+}
+let STATE = loadState();
+function saveState(){
+  try{ localStorage.setItem('fujisan_v1', JSON.stringify(STATE)); }catch(e){}
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+function dishById(id){ return DISHES.find(d=>d.id===id); }
+function drinkBySlug(s){ return DRINKS.find(d=>d.slug===s); }
+
+function setQty(kind, key, qty){
+  const store = kind==='food' ? STATE.food : STATE.drink;
+  if(qty<=0) delete store[key]; else store[key]=qty;
+  saveState();
+  renderAll();
+}
+
+function changeQty(kind, key, delta){
+  const store = kind==='food' ? STATE.food : STATE.drink;
+  const cur = store[key]||0;
+  let next = cur+delta;
+  if(next<0) next=0;
+  if(next>20) next=20;
+  setQty(kind,key,next);
+}
+
+function toggleMax1(id){
+  const cur = STATE.food[id]||0;
+  setQty('food', id, cur>0 ? 0 : 1);
+}
+
+// ---------- RENDER MENU ----------
+const categoriesOrder = [];
+DISHES.forEach(d=>{ if(!categoriesOrder.includes(d.categoria)) categoriesOrder.push(d.categoria); });
+let openCats = new Set();
+
+function dishPhotoPlaceholder(d){
+  return CAT_ICON[d.categoria] || '🍽️';
+}
+
+function renderMenu(){
+  const wrap = document.getElementById('menu-list');
+  wrap.innerHTML = '';
+  categoriesOrder.forEach(cat=>{
+    const items = DISHES.filter(d=>d.categoria===cat);
+    const div = document.createElement('div');
+    div.className = 'cat' + (openCats.has(cat) ? ' open':'');
+    const head = document.createElement('div');
+    head.className='cat-head';
+    head.innerHTML = `<div><h2>${CAT_ICON[cat]||''} ${cat}</h2><div class="sub">${items.length} piatti</div></div><div class="chev">▾</div>`;
+    head.onclick = ()=>{ if(openCats.has(cat)) openCats.delete(cat); else openCats.add(cat); renderMenu(); };
+    div.appendChild(head);
+    const body = document.createElement('div');
+    body.className='cat-body';
+    items.forEach(d=>{
+      body.appendChild(dishRow(d));
+    });
+    div.appendChild(body);
+    wrap.appendChild(div);
+  });
+}
+
+function dishRow(d){
+  const row = document.createElement('div');
+  row.className='dish';
+  const qty = STATE.food[d.id]||0;
+  const meta = [];
+  if(d.pz && d.pz!=='N/D') meta.push(`<span class="chip">${d.pz} pz</span>`);
+  if(d.allergeni.length) meta.push(`<span class="chip">All. ${d.allergeni.join(',')}</span>`);
+  if(d.surgelato) meta.push(`<span class="chip freeze">❄ Surgelato</span>`);
+  if(d.max1persona) meta.push(`<span class="chip warn">Max 1/persona</span>`);
+  if(d.vegetariano) meta.push(`<span class="chip">🌱</span>`);
+  if(d.piccante) meta.push(`<span class="chip">🌶️</span>`);
+  if(d.consigliato) meta.push(`<span class="chip">⭐</span>`);
+
+  row.innerHTML = `
+    <div class="dish-photo">${dishPhotoPlaceholder(d)}</div>
+    <div class="dish-info">
+      <div class="dish-top"><span class="dish-id">${d.id}</span><span class="dish-name">${d.nome}</span></div>
+      ${d.descrizione ? `<div class="dish-desc">${d.descrizione}</div>` : ''}
+      <div class="dish-meta">${meta.join('')}</div>
+    </div>
+    <div class="qtywrap"></div>
+  `;
+  const qtywrap = row.querySelector('.qtywrap');
+  if(d.max1persona){
+    const btn = document.createElement('button');
+    btn.className = 'toggle1' + (qty>0?' on':'');
+    btn.textContent = qty>0 ? 'Aggiunto' : 'Aggiungi';
+    btn.onclick = ()=>toggleMax1(d.id);
+    qtywrap.appendChild(btn);
+  } else {
+    qtywrap.innerHTML = `
+      <div class="stepper">
+        <button class="minus">−</button>
+        <span class="qty">${qty}</span>
+        <button class="plus">+</button>
+      </div>`;
+    qtywrap.querySelector('.minus').onclick = ()=>changeQty('food', d.id, -1);
+    qtywrap.querySelector('.plus').onclick = ()=>changeQty('food', d.id, 1);
+  }
+  return row;
+}
+
+// ---------- RENDER BEVANDE ----------
+function renderBevande(){
+  const wrap = document.getElementById('bev-list');
+  wrap.innerHTML='';
+  const subcats = [];
+  DRINKS.forEach(d=>{ if(!subcats.includes(d.sottocategoria)) subcats.push(d.sottocategoria); });
+  subcats.forEach(sc=>{
+    const title = document.createElement('div');
+    title.className='section-title'; title.textContent = sc;
+    wrap.appendChild(title);
+    const card = document.createElement('div'); card.className='card';
+    DRINKS.filter(d=>d.sottocategoria===sc).forEach(d=>{
+      const qty = STATE.drink[d.slug]||0;
+      const r = document.createElement('div');
+      r.className='summary-row';
+      r.innerHTML = `<div class="left"><span>${d.nome}</span><span style="color:var(--ink-faint);font-size:.75rem">${d.prezzo}</span></div>`;
+      const sw = document.createElement('div'); sw.className='stepper';
+      sw.innerHTML = `<button class="minus">−</button><span class="qty">${qty}</span><button class="plus">+</button>`;
+      sw.querySelector('.minus').onclick=()=>changeQty('drink', d.slug, -1);
+      sw.querySelector('.plus').onclick=()=>changeQty('drink', d.slug, 1);
+      r.appendChild(sw);
+      card.appendChild(r);
+    });
+    wrap.appendChild(card);
+  });
+}
+
+// ---------- ORDINE (personal) ----------
+function sortedIdEntries(obj){
+  return Object.keys(obj).map(k=>[k,obj[k]]).sort((a,b)=>{
+    const na=parseInt(a[0],10), nb=parseInt(b[0],10);
+    if(na!==nb) return na-nb;
+    return a[0].localeCompare(b[0]);
+  });
+}
+
+function myOrderLines(){
+  const foodLines = sortedIdEntries(STATE.food).map(([id,qty])=>{
+    const d = dishById(id); if(!d) return null;
+    return {label:`${id} — ${d.nome}`, qty, warn:d.max1persona};
+  }).filter(Boolean);
+  const drinkLines = Object.keys(STATE.drink).map(slug=>{
+    const d = drinkBySlug(slug); if(!d) return null;
+    return {label:d.nome, qty:STATE.drink[slug]};
+  }).filter(Boolean);
+  return {foodLines, drinkLines};
+}
+
+function renderOrdine(){
+  document.getElementById('input-name').value = STATE.name||'';
+  const {foodLines, drinkLines} = myOrderLines();
+  const total = foodLines.reduce((s,l)=>s+l.qty,0) + drinkLines.reduce((s,l)=>s+l.qty,0);
+  document.getElementById('my-count').textContent = total ? `(${total} portate)` : '';
+  const card = document.getElementById('my-order-card');
+  card.innerHTML = '';
+  if(!foodLines.length && !drinkLines.length){
+    card.innerHTML = `<div class="empty"><span class="ic">🧾</span>Non hai ancora selezionato piatti.<br>Vai su Menù o Bevande.</div>`;
+  } else {
+    foodLines.forEach(l=>{
+      const r = document.createElement('div'); r.className='summary-row';
+      r.innerHTML = `<div class="left">${l.label}</div><div class="qty-badge">×${l.qty}</div>`;
+      card.appendChild(r);
+    });
+    if(drinkLines.length){
+      const sep = document.createElement('div');
+      sep.style.cssText='padding:8px 14px;font-size:.68rem;color:var(--ink-faint);border-top:1px solid var(--line)';
+      sep.textContent = 'BEVANDE (a parte)';
+      card.appendChild(sep);
+      drinkLines.forEach(l=>{
+        const r = document.createElement('div'); r.className='summary-row';
+        r.innerHTML = `<div class="left">${l.label}</div><div class="qty-badge">×${l.qty}</div>`;
+        card.appendChild(r);
+      });
+    }
+  }
+  const badge = document.getElementById('nav-badge-ordine');
+  if(total>0){ badge.style.display='flex'; badge.textContent = total; } else badge.style.display='none';
+}
+
+function orderAsText(name, foodLines, drinkLines){
+  let t = name ? `Ordine di ${name}\n` : 'Ordine\n';
+  t += foodLines.map(l=>`${l.qty}x  ${l.label}`).join('\n');
+  if(drinkLines.length){ t += '\n\nBevande:\n' + drinkLines.map(l=>`${l.qty}x  ${l.label}`).join('\n'); }
+  return t;
+}
+
+function copyText(str){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(str).then(()=>toast('Copiato negli appunti')).catch(()=>fallbackCopy(str));
+  } else fallbackCopy(str);
+}
+function fallbackCopy(str){
+  const ta=document.createElement('textarea'); ta.value=str; ta.style.position='fixed'; ta.style.opacity=0;
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); toast('Copiato negli appunti'); }
+  catch(e){ toast('Copia manuale: seleziona il testo mostrato'); }
+  document.body.removeChild(ta);
+}
+
+// ---------- QR generate ----------
+let qrObj = null;
+function showMyQr(){
+  const {foodLines, drinkLines} = myOrderLines();
+  if(!foodLines.length && !drinkLines.length){ toast('Seleziona prima qualche piatto'); return; }
+  const payload = JSON.stringify({n:STATE.name||'Ospite', f:STATE.food, d:STATE.drink});
+  const target = document.getElementById('qr-target');
+  target.innerHTML = '';
+  qrObj = new QRCode(target, {text: payload, width:220, height:220, correctLevel: QRCode.CorrectLevel.M});
+  openModal('qr-modal');
+}
+
+// ---------- GRUPPO ----------
+function renderGruppo(){
+  const wrap = document.getElementById('group-people');
+  wrap.innerHTML='';
+  document.getElementById('group-count').textContent = `(${STATE.group.length})`;
+  STATE.group.forEach((p,i)=>{
+    const el = document.createElement('div'); el.className='person-chip';
+    const totQ = Object.values(p.food||{}).reduce((s,v)=>s+v,0) + Object.values(p.drink||{}).reduce((s,v)=>s+v,0);
+    el.innerHTML = `<span>${p.n} <span style="color:var(--ink-faint)">— ${totQ} portate</span></span>`;
+    const btn = document.createElement('button'); btn.textContent='✕';
+    btn.onclick = ()=>{ STATE.group.splice(i,1); saveState(); renderGruppo(); };
+    el.appendChild(btn);
+    wrap.appendChild(el);
+  });
+
+  const foodTotals={}, drinkTotals={};
+  // include own order too
+  const all = STATE.group.concat([{n:STATE.name||'Io', food:STATE.food, drink:STATE.drink}]);
+  all.forEach(p=>{
+    Object.entries(p.food||{}).forEach(([id,q])=>{ foodTotals[id]=(foodTotals[id]||0)+q; });
+    Object.entries(p.drink||{}).forEach(([s,q])=>{ drinkTotals[s]=(drinkTotals[s]||0)+q; });
+  });
+  const foodEntries = sortedIdEntries(foodTotals);
+  const cumCard = document.getElementById('cum-order-card');
+  cumCard.innerHTML='';
+  const totQ = foodEntries.reduce((s,e)=>s+e[1],0);
+  document.getElementById('cum-count').textContent = totQ ? `(${totQ} portate, ${all.length} persone)` : '';
+  if(!foodEntries.length){
+    cumCard.innerHTML = `<div class="empty"><span class="ic">👥</span>Ancora nessun ordine nel cumulativo.</div>`;
+  } else {
+    foodEntries.forEach(([id,q])=>{
+      const d = dishById(id); if(!d) return;
+      const r=document.createElement('div'); r.className='summary-row';
+      r.innerHTML = `<div class="left"><span class="dish-id">${id}</span><span>${d.nome}</span></div><div class="qty-badge">×${q}</div>`;
+      cumCard.appendChild(r);
+    });
+    const dEntries = Object.entries(drinkTotals);
+    if(dEntries.length){
+      const sep=document.createElement('div');
+      sep.style.cssText='padding:8px 14px;font-size:.68rem;color:var(--ink-faint);border-top:1px solid var(--line)';
+      sep.textContent='BEVANDE';
+      cumCard.appendChild(sep);
+      dEntries.forEach(([slug,q])=>{
+        const d=drinkBySlug(slug); if(!d) return;
+        const r=document.createElement('div'); r.className='summary-row';
+        r.innerHTML = `<div class="left">${d.nome}</div><div class="qty-badge">×${q}</div>`;
+        cumCard.appendChild(r);
+      });
+    }
+  }
+}
+
+function cumAsText(){
+  const foodTotals={}, drinkTotals={};
+  const all = STATE.group.concat([{n:STATE.name||'Io', food:STATE.food, drink:STATE.drink}]);
+  all.forEach(p=>{
+    Object.entries(p.food||{}).forEach(([id,q])=>{ foodTotals[id]=(foodTotals[id]||0)+q; });
+    Object.entries(p.drink||{}).forEach(([s,q])=>{ drinkTotals[s]=(drinkTotals[s]||0)+q; });
+  });
+  let t = `ORDINE CUMULATIVO — Fujisan Pranzo\nTavolo di ${all.length} persone\n\n`;
+  sortedIdEntries(foodTotals).forEach(([id,q])=>{
+    const d=dishById(id); if(!d) return;
+    t += `${id}  x${q}   ${d.nome}\n`;
+  });
+  const dEntries = Object.entries(drinkTotals);
+  if(dEntries.length){
+    t += '\nBEVANDE:\n';
+    dEntries.forEach(([slug,q])=>{ const d=drinkBySlug(slug); if(d) t+=`x${q}   ${d.nome}\n`; });
+  }
+  return t;
+}
+
+// ---------- SCAN ----------
+let scanStream=null;
+function startScan(){
+  openModal('scan-modal');
+  const video = document.getElementById('scan-video');
+  const canvas = document.getElementById('scan-canvas');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+    scanStream = stream;
+    video.srcObject = stream;
+    video.play();
+    requestAnimationFrame(tick);
+  }).catch(()=>{ toast('Fotocamera non disponibile'); closeModal('scan-modal'); });
+
+  function tick(){
+    if(!document.getElementById('scan-modal').classList.contains('open')) return;
+    if(video.readyState===video.HAVE_ENOUGH_DATA){
+      canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code = jsQR(imgData.data, imgData.width, imgData.height);
+      if(code){
+        try{
+          const parsed = JSON.parse(code.data);
+          STATE.group.push({n:parsed.n||'Ospite', food:parsed.f||{}, drink:parsed.d||{}});
+          saveState();
+          toast('Aggiunto: ' + (parsed.n||'Ospite'));
+        }catch(e){ toast('QR non valido'); }
+        stopScan();
+        renderGruppo();
+        return;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+}
+function stopScan(){
+  if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+  closeModal('scan-modal');
+}
+
+// ---------- ARRIVO ----------
+function renderArrivo(){
+  const foodLines = sortedIdEntries(STATE.food);
+  const pending = document.getElementById('arrivo-pending');
+  const done = document.getElementById('arrivo-done');
+  pending.innerHTML=''; done.innerHTML='';
+  let nPending=0, nDone=0;
+  if(!foodLines.length){
+    pending.innerHTML = `<div class="empty"><span class="ic">🔔</span>Ordina qualcosa dal Menù per vederlo qui.</div>`;
+  }
+  foodLines.forEach(([id,qty])=>{
+    const d = dishById(id); if(!d) return;
+    const isDone = !!STATE.arrived[id];
+    const el = document.createElement('div');
+    el.className = 'arrivo-item' + (isDone?' done':'');
+    el.innerHTML = `<div class="dish-photo">${dishPhotoPlaceholder(d)}</div>
+      <div class="name">${d.nome}<small>${id} · ${qty}× ordinati</small></div>
+      <div class="check">✓</div>`;
+    el.onclick = ()=>{ STATE.arrived[id] = !isDone; saveState(); renderArrivo(); };
+    if(isDone){ nDone++; done.appendChild(el); } else { nPending++; pending.appendChild(el); }
+  });
+  if(foodLines.length && !nPending) pending.innerHTML = `<div class="empty"><span class="ic">🎉</span>Tutto arrivato.</div>`;
+  document.getElementById('arrivo-pending-count').textContent = nPending?`(${nPending})`:'';
+  document.getElementById('arrivo-done-count').textContent = nDone?`(${nDone})`:'';
+  const badge = document.getElementById('nav-badge-arrivo');
+  if(nPending>0){ badge.style.display='flex'; badge.textContent=nPending; } else badge.style.display='none';
+}
+
+// ---------- LEGEND ----------
+function renderLegend(){
+  const tbl = document.getElementById('legend-table');
+  tbl.innerHTML = Object.entries(ALLERGENI).map(([n,label])=>`<tr><td>${n}</td><td>${label}</td></tr>`).join('');
+}
+
+// ---------- MODALS / NAV ----------
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  if(id==='scan-modal') stopScan();
+}
+document.querySelectorAll('[data-close]').forEach(b=> b.onclick = ()=>closeModal(b.dataset.close));
+document.querySelectorAll('.modal-bg').forEach(m=> m.addEventListener('click', e=>{ if(e.target===m) closeModal(m.id); }));
+
+document.querySelectorAll('nav.tabbar button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+btn.dataset.view).classList.add('active');
+  });
+});
+
+document.getElementById('btn-info').onclick = ()=>openModal('info-modal');
+document.getElementById('btn-qr').onclick = showMyQr;
+document.getElementById('btn-scan').onclick = startScan;
+document.getElementById('btn-copy').onclick = ()=>{
+  const {foodLines, drinkLines} = myOrderLines();
+  copyText(orderAsText(STATE.name, foodLines, drinkLines));
+};
+document.getElementById('btn-clear').onclick = ()=>{
+  if(confirm('Svuotare tutte le tue selezioni?')){
+    STATE.food={}; STATE.drink={}; STATE.arrived={}; saveState(); renderAll();
+  }
+};
+document.getElementById('btn-cum-copy').onclick = ()=>copyText(cumAsText());
+document.getElementById('btn-cum-print').onclick = ()=>{
+  document.getElementById('print-area').innerHTML = '<pre style="font-family:monospace;white-space:pre-wrap;font-size:14px">'+cumAsText()+'</pre>';
+  window.print();
+};
+document.getElementById('input-name').addEventListener('input', e=>{ STATE.name = e.target.value; saveState(); });
+
+function renderAll(){
+  renderMenu(); renderBevande(); renderOrdine(); renderGruppo(); renderArrivo(); renderLegend();
+}
+renderAll();
+</script>
+</body>
+</html>
