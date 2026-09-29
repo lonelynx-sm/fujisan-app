@@ -746,7 +746,7 @@ function renderLegend(){
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
-  if(id==='scan-modal') stopScan();
+  if(id==='scan-modal' && scanStream) stopScan();
 }
 document.querySelectorAll('[data-close]').forEach(b=> b.onclick = ()=>closeModal(b.dataset.close));
 document.querySelectorAll('.modal-bg').forEach(m=> m.addEventListener('click', e=>{ if(e.target===m) closeModal(m.id); }));
