@@ -99,8 +99,10 @@ nav.tabbar button{position:relative;}
 .dish-photo{
   width:52px; height:52px; border-radius:10px; flex:none; background:var(--card2);
   display:flex; align-items:center; justify-content:center; font-size:1.4rem; color:var(--ink-faint);
-  border:1px solid var(--line);
+  border:1px solid var(--line); overflow:hidden;
 }
+.dish-photo.has-photo{background:#000;}
+.dish-photo img{width:100%; height:100%; object-fit:contain; display:block;}
 .dish-info{flex:1; min-width:0;}
 .dish-top{display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;}
 .dish-id{
@@ -398,8 +400,24 @@ const categoriesOrder = [];
 DISHES.forEach(d=>{ if(!categoriesOrder.includes(d.categoria)) categoriesOrder.push(d.categoria); });
 let openCats = new Set();
 
+const DISH_PHOTO_IDS = new Set(['05','06','09','01','03','301','014','013','501','502','505','11','12','7','81','82','111','112','113','114','115','116','117','118','121','201','203','207','204','211','212','213','214','215','216','217','218','219','220','911','912','913','914','915','916','411','413','414','416','442','417','418','419','422','423','424','426','427','430','432','435','436','811','814','440','801','511','512','901','603','611','15','16','17','181','182','183','19','20','22','23','24','26','27','314','29','311','312','313','49','50','51','52','53','530','54','55','56','57','570','35','36','32','33','39','40','401','402','701','904']);
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function dishPhotoClass(d){
+  return DISH_PHOTO_IDS.has(d.id) ? ' has-photo' : '';
+}
+
 function dishPhotoPlaceholder(d){
-  return CAT_ICON[d.categoria] || '🍽️';
+  const emoji = CAT_ICON[d.categoria] || '🍽️';
+  if(DISH_PHOTO_IDS.has(d.id)){
+    return `<span class="ph-emoji" style="display:none">${emoji}</span>`
+      + `<img src="images/${d.id}.jpg" alt="${escapeHtml(d.nome)}" `
+      + `onerror="this.style.display='none'; this.previousElementSibling.style.display='flex'; this.closest('.dish-photo').classList.remove('has-photo')">`;
+  }
+  return emoji;
 }
 
 function renderMenu(){
@@ -438,7 +456,7 @@ function dishRow(d){
   if(d.consigliato) meta.push(`<span class="chip">⭐</span>`);
 
   row.innerHTML = `
-    <div class="dish-photo">${dishPhotoPlaceholder(d)}</div>
+    <div class="dish-photo${dishPhotoClass(d)}">${dishPhotoPlaceholder(d)}</div>
     <div class="dish-info">
       <div class="dish-top"><span class="dish-id">${d.id}</span><span class="dish-name">${d.nome}</span></div>
       ${d.descrizione ? `<div class="dish-desc">${d.descrizione}</div>` : ''}
@@ -705,7 +723,7 @@ function renderArrivo(){
     const isDone = !!STATE.arrived[id];
     const el = document.createElement('div');
     el.className = 'arrivo-item' + (isDone?' done':'');
-    el.innerHTML = `<div class="dish-photo">${dishPhotoPlaceholder(d)}</div>
+    el.innerHTML = `<div class="dish-photo${dishPhotoClass(d)}">${dishPhotoPlaceholder(d)}</div>
       <div class="name">${d.nome}<small>${id} · ${qty}× ordinati</small></div>
       <div class="check">✓</div>`;
     el.onclick = ()=>{ STATE.arrived[id] = !isDone; saveState(); renderArrivo(); };
