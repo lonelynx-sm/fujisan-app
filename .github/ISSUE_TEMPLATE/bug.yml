@@ -1,0 +1,51 @@
+name: Segnala un bug
+description: Qualcosa non funziona come dovrebbe
+labels: ["bug"]
+body:
+  - type: textarea
+    id: cosa-succede
+    attributes:
+      label: Cosa succede?
+      description: Descrivi il problema. Puoi allegare uno screenshot.
+    validations:
+      required: true
+  - type: textarea
+    id: passi
+    attributes:
+      label: Come si riproduce?
+      placeholder: |
+        1. Apro...
+        2. Tocco...
+        3. Succede...
+    validations:
+      required: true
+  - type: textarea
+    id: atteso
+    attributes:
+      label: Cosa ti aspettavi?
+    validations:
+      required: true
+  - type: dropdown
+    id: dispositivo
+    attributes:
+      label: Dispositivo / browser
+      options:
+        - iPhone - Safari
+        - iPhone - Chrome
+        - Android - Chrome
+        - Desktop - Safari
+        - Desktop - Chrome
+        - Altro
+    validations:
+      required: true
+  - type: dropdown
+    id: priorita
+    attributes:
+      label: Priorità
+      options:
+        - P1 - blocca l'uso dell'app
+        - P2 - fastidioso ma aggirabile
+        - P3 - minore
+      default: 1
+    validations:
+      required: true
