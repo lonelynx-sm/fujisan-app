@@ -1,0 +1,36 @@
+name: Proponi un miglioramento
+description: Una nuova funzione o un'evoluzione dell'app
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Cosa vorresti?
+      description: Descrivi la funzione o il miglioramento.
+    validations:
+      required: true
+  - type: textarea
+    id: motivo
+    attributes:
+      label: Perché è utile?
+      description: Quale problema risolve o quale vantaggio porta?
+    validations:
+      required: false
+  - type: textarea
+    id: criteri
+    attributes:
+      label: Come capiamo che è fatto?
+      description: Criteri di accettazione, anche in poche righe.
+    validations:
+      required: false
+  - type: dropdown
+    id: priorita
+    attributes:
+      label: Priorità
+      options:
+        - P1 - da fare subito
+        - P2 - importante
+        - P3 - quando c'è tempo
+      default: 2
+    validations:
+      required: true
